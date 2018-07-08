@@ -70,7 +70,7 @@ def writeMoveAndBoardToFile(storage, move, board, col, won):
 
 
 
-def processGame(storage, line):
+def processGame(storage, suffix, line, totalToWrite):
 
     # We'll convert the board array to 19x19 when we write it to the file
     # for now we'll just use the move index
@@ -80,30 +80,28 @@ def processGame(storage, line):
     semiCount = 0
     i = 0
 
-    whoWon = 0
+    winner = suffix.split('\t')[8]
 
-    # TODO: Igore handicap games!
-    # Find the start of the game (Should later look at handicaps?)
-    for ch in line:
-        i += 1
-        if semiCount < 2 and ch == ';':
-            semiCount += 1
-        elif semiCount > 1:
-            break
+    assert(winner[0] == 'B' or winner[0] == 'W')
+    whoWon = BLACK if winner[0] == 'B' else WHITE
 
-        # Find who won the game
-        if line[i] == 'R' and line[i+1] == 'E':
-            if line[i+3] == 'B':
-                whoWon = BLACK
-            elif line[i+3] == 'W':
-                whoWon = WHITE
+    moves = line.split(';')[1:]
 
+    idxMovesToWrite = []
+
+    for i in range(totalToWrite):
+        roll = random.randint(0, len(moves))
+        if roll in idxMovesToWrite:
+            i -= 1
+            continue
+        idxMovesToWrite.append(roll)
+
+    i = line.index('\t') + 3
     # Process game into moves and boards
     col = BLACK
     last = False
-    while i < len(line):
-        mv = line[i-1:i+5]
 
+    for mv in moves:
         # Skip all moves in a game after passes 
         # ( Since passes aren't a move in the model yet )
         # Pass seems to look like ...;W[];B[la]...
@@ -130,31 +128,62 @@ class FileLoader():
         self.indexFolder = indexFolder
         self.kifuList = os.listdir(kifuFolder)
         self.indexList = os.listdir(indexFolder)
-        self.fileIdx = 0
-        self.fileKifuIdx = 0
+        self.indexIdx = 0
+        self.kifuIdx = 0
         self.loadNewFile = True
         self.indexFile = ''
         self.kifuFile = ''
+        self.iLinesIdx = 0
+        self.kLinesIdx = 0
+        self.indexLines = ''
+        self.kifuLines = ''
+
+    def openFile(self, folder, fileList, fileIdx):
+        return open(folder + '/' + fileList[fileIdx], "r", encoding="utf-8")
 
     def loadNextFile(self):
         if self.indexFile == '':
-            self.indexFile = open(self.indexList[self.fileIdx])
-            self.fileKifuIdx = 0
+            self.indexFile = self.openFile(self.indexFolder, self.indexList, self.indexIdx) 
+            self.indexLines = self.indexFile.readlines()
+            self.iLinesIdx = 0
+            self.kifuFile = self.openFile(self.kifuFolder, self.kifuList, self.kifuIdx)
+            self.kifuLines = self.kifuFile.readlines()
+            self.kLinesIdx = 0
         else:
-            year = self.indexList[self.fileIdx][0:4]
+            year = self.indexList[self.indexIdx][0:4]
             nextKifuYear = self.kifuList[self.fileKifuIdx+1][0:4]
             self.fileKifuIdx += 1
-            self.kifuFile = open(self.kifuList[self.fileKifuIdx])
-
+            self.kifuFile = self.openFile(self.kifuFolder, self.kifuList, self.kifuIdx)
+            self.kifuLines = self.kifuFile.readlines()
+            self.kLinesIdx = 0
+            
             if year != nextKifuYear:
-                self.fileIdx += 1
-                self.indexFile = open(self.indexList[self.fileIdx])
+                self.indexIdx += 1
+                self.indexFile = self.openFile(self.indexFolder, self.indexList, self.indexIdx)
+                self.indexLines = self.indexFile.readlines()
+                self.iLinesIdx = 0
 
-    
     def next(self):
         if self.loadNewFile:
             self.loadNextFile()
             self.loadNewFile = False
+
+        game = self.kifuLines[self.kLinesIdx]
+        suffix = self.indexLines[self.iLinesIdx]
+
+        self.kLinesIdx += 1
+        self.iLinesIdx += 1
+
+        if self.kLinesIdx >= len(self.kifuLines) \
+        or self.iLinesIdx >= len(self.indexLines):
+            self.loadNewFile = True
+
+        t = game.split('\t')[0]
+        r = suffix.split('\t')[0]
+
+        assert(t == r)
+
+        return suffix, game
 
 
 
@@ -176,7 +205,8 @@ def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1):
     
     while movesProcessed < totalMoves and stop == False:
 
-        game = loader.next()
+        suffix, game = loader.next()
+        movesProcessed += processGame(storage, suffix, game, movesPerGame)
 
         if stop:
             storage.writeToFile()
