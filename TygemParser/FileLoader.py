@@ -10,7 +10,7 @@ class FileLoader():
         self.indexList      = os.listdir(indexFolder)
         self.indexIdx       = 0
         self.kifuIdx        = 0
-        self.loadNewFile    = True
+        self.loadNewFile    = False
         self.iLinesIdx      = 0
         self.kLinesIdx      = 0
         self.indexFile      = self.openFile(self.indexFolder, self.indexList, self.indexIdx) 
