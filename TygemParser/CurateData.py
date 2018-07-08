@@ -1,6 +1,7 @@
 import os
 import random
 import numpy as np
+from FileLoader import FileLoader
 from Globals import BoardLength, BoardSize, BoardDepth, BoardLengthP, BoardSizeP
 from Globals import EMPTY, BLACK, WHITE, OFF_BOARD
 
@@ -68,8 +69,6 @@ def writeMoveAndBoardToFile(storage, move, board, col, won):
 
     return
 
-
-
 def processGame(storage, suffix, line, totalToWrite):
 
     # We'll convert the board array to 19x19 when we write it to the file
@@ -96,11 +95,11 @@ def processGame(storage, suffix, line, totalToWrite):
             continue
         idxMovesToWrite.append(roll)
 
-    i = line.index('\t') + 3
     # Process game into moves and boards
+    i = 0
     col = BLACK
     last = False
-
+    processedMoves = 0
     for mv in moves:
         # Skip all moves in a game after passes 
         # ( Since passes aren't a move in the model yet )
@@ -117,75 +116,20 @@ def processGame(storage, suffix, line, totalToWrite):
         # to move won or lost
         won = whoWon == col
 
-        writeMoveAndBoardToFile(storage, m, board, col, won)
+        # If it's one of the randomly chosen moves, write it to disk
+        # If it's the last move, we can stop writting this game
+        if i in idxMovesToWrite:
+            processedMoves += 1
+            writeMoveAndBoardToFile(storage, m, board, col, won)
+            if all(i >= m for m in idxMovesToWrite):
+                break
+        
+        
         board.makeMove(m, col)
         col = flipCol(col)
-        i += 6
+        i += 1
 
-class FileLoader():
-    def __init__(self, kifuFolder, indexFolder):
-        self.kifuFolder = kifuFolder
-        self.indexFolder = indexFolder
-        self.kifuList = os.listdir(kifuFolder)
-        self.indexList = os.listdir(indexFolder)
-        self.indexIdx = 0
-        self.kifuIdx = 0
-        self.loadNewFile = True
-        self.indexFile = ''
-        self.kifuFile = ''
-        self.iLinesIdx = 0
-        self.kLinesIdx = 0
-        self.indexLines = ''
-        self.kifuLines = ''
-
-    def openFile(self, folder, fileList, fileIdx):
-        return open(folder + '/' + fileList[fileIdx], "r", encoding="utf-8")
-
-    def loadNextFile(self):
-        if self.indexFile == '':
-            self.indexFile = self.openFile(self.indexFolder, self.indexList, self.indexIdx) 
-            self.indexLines = self.indexFile.readlines()
-            self.iLinesIdx = 0
-            self.kifuFile = self.openFile(self.kifuFolder, self.kifuList, self.kifuIdx)
-            self.kifuLines = self.kifuFile.readlines()
-            self.kLinesIdx = 0
-        else:
-            year = self.indexList[self.indexIdx][0:4]
-            nextKifuYear = self.kifuList[self.fileKifuIdx+1][0:4]
-            self.fileKifuIdx += 1
-            self.kifuFile = self.openFile(self.kifuFolder, self.kifuList, self.kifuIdx)
-            self.kifuLines = self.kifuFile.readlines()
-            self.kLinesIdx = 0
-            
-            if year != nextKifuYear:
-                self.indexIdx += 1
-                self.indexFile = self.openFile(self.indexFolder, self.indexList, self.indexIdx)
-                self.indexLines = self.indexFile.readlines()
-                self.iLinesIdx = 0
-
-    def next(self):
-        if self.loadNewFile:
-            self.loadNextFile()
-            self.loadNewFile = False
-
-        game = self.kifuLines[self.kLinesIdx]
-        suffix = self.indexLines[self.iLinesIdx]
-
-        self.kLinesIdx += 1
-        self.iLinesIdx += 1
-
-        if self.kLinesIdx >= len(self.kifuLines) \
-        or self.iLinesIdx >= len(self.indexLines):
-            self.loadNewFile = True
-
-        t = game.split('\t')[0]
-        r = suffix.split('\t')[0]
-
-        assert(t == r)
-
-        return suffix, game
-
-
+    return processedMoves
 
 def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1):
     
@@ -208,8 +152,8 @@ def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1):
         suffix, game = loader.next()
         movesProcessed += processGame(storage, suffix, game, movesPerGame)
 
-        if stop:
-            storage.writeToFile()
+    storage.writeToFile()
+
 
 
 
@@ -239,27 +183,4 @@ def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1):
 # Misc
 # Data is randomized when written to disk,
 # but only within the bounds of the movesPerFile
-def curateData():
-
-    movesPerFile = 10000
-    outFolder = 'outData/' 
-    outfilename = outFolder + input("Enter output file name: ")
-    count = int(input("Enter number of games to write to disk: "))
-
-    filename = outFolder + 'pro2000+.txt'
-    file = open(filename)
-
-    
-    storage = Storage(outfilename, movesPerFile)
-   
-    for i in range(count):
-
-        line = file.readline()
-
-        processGame(line, storage)
-
-        if i >= count - 1:
-            storage.writeToFile()
-
-
 

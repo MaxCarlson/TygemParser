@@ -23,6 +23,9 @@
   <ItemGroup>
     <Compile Include="Board.py" />
     <Compile Include="CurateData.py" />
+    <Compile Include="FileLoader.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Globals.py" />
     <Compile Include="Move.py" />
     <Compile Include="TygemParser.py" />

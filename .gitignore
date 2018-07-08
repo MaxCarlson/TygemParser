@@ -394,3 +394,5 @@ __pycache__/
 /TygemParser/Kifu/2006-01
 /TygemParser/Kifu/2005-12
 /TygemParser/Kifu/2005-11
+/TygemParser/outData/dataf1.npy
+*.npy
