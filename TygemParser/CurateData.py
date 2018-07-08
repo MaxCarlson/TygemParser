@@ -48,8 +48,9 @@ class Storage:
             self.storage = self.storage[0:self.strgIdx]
             self.yStorage = self.yStorage[0:self.strgIdx]
 
-        # Shuffle the results so we don't have large 
-        # chunks of the same game next to eachtoher
+        # Shuffle the results so we don't have
+        # moves from the same game next to eachother
+        # Only really needed for movesPerGame > 1
         state = np.random.get_state()
         np.random.shuffle(self.storage)
         np.random.set_state(state)
@@ -69,7 +70,7 @@ def writeMoveAndBoardToFile(storage, move, board, col, won):
 
     return
 
-def processGame(storage, suffix, line, totalToWrite):
+def processGame(storage, info, game, movesToWrite):
 
     # We'll convert the board array to 19x19 when we write it to the file
     # for now we'll just use the move index
@@ -79,16 +80,16 @@ def processGame(storage, suffix, line, totalToWrite):
     semiCount = 0
     i = 0
 
-    winner = suffix.split('\t')[8]
+    winner = info.split('\t')[8]
 
     assert(winner[0] == 'B' or winner[0] == 'W')
     whoWon = BLACK if winner[0] == 'B' else WHITE
 
-    moves = line.split(';')[1:]
+    moves = game.split(';')[1:]
 
     idxMovesToWrite = []
 
-    for i in range(totalToWrite):
+    for i in range(movesToWrite):
         roll = random.randint(0, len(moves))
         if roll in idxMovesToWrite:
             i -= 1
@@ -107,7 +108,7 @@ def processGame(storage, suffix, line, totalToWrite):
         # Only 1 in 1000 games in this dataset though so 
         # might need a differnet data set to train the network to pass reasonably well
         if mv[2] == ']':
-        #    print(line)
+        #    print(game)
             break
 
         m = Move(mv)
@@ -131,6 +132,8 @@ def processGame(storage, suffix, line, totalToWrite):
 
     return processedMoves
 
+import time
+
 def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1):
     
     movesPerFile = 10000
@@ -146,13 +149,19 @@ def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1):
     stop = False
     fileIndex = 0
     movesProcessed = 0
+
+    t0 = time.time()
     
     while movesProcessed < totalMoves and stop == False:
 
-        suffix, game = loader.next()
-        movesProcessed += processGame(storage, suffix, game, movesPerGame)
+        info, game = loader.next()
+        movesProcessed += processGame(storage, info, game, movesPerGame)
 
     storage.writeToFile()
+
+    t1 = time.time()
+    print('Total time for ' + str(totalMoves) + ' moves: ', t1-t0)
+
 
 
 
