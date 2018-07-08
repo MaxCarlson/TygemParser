@@ -1,4 +1,5 @@
 import os
+import time
 import random
 import numpy as np
 from FileLoader import FileLoader
@@ -132,7 +133,7 @@ def processGame(storage, info, game, movesToWrite):
 
     return processedMoves
 
-import time
+from ProgressBar import ProgressBar
 
 def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1):
     
@@ -152,10 +153,14 @@ def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1):
 
     t0 = time.time()
     
+    bar = ProgressBar(totalMoves, width=60, fmt=ProgressBar.FULL)
+
     while movesProcessed < totalMoves and stop == False:
 
         info, game = loader.next()
-        movesProcessed += processGame(storage, info, game, movesPerGame)
+        mc = processGame(storage, info, game, movesPerGame)
+        movesProcessed += mc
+        bar(mc)
 
     storage.writeToFile()
 

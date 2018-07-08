@@ -57,7 +57,7 @@ class FileLoader():
         # If the id's aren't the same game, we have a problem...
         t = game.split('\t')[0]
         r = info.split('\t')[0]
-        assert(t == r)
+        assert t == r, "Mismatched Kifu/Index ID's!"
 
         return info, game
 
