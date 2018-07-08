@@ -1,3 +1,5 @@
+import os
+import random
 import numpy as np
 from Globals import BoardLength, BoardSize, BoardDepth, BoardLengthP, BoardSizeP
 from Globals import EMPTY, BLACK, WHITE, OFF_BOARD
@@ -66,7 +68,9 @@ def writeMoveAndBoardToFile(storage, move, board, col, won):
 
     return
 
-def processGame(line, storage):
+
+
+def processGame(storage, line):
 
     # We'll convert the board array to 19x19 when we write it to the file
     # for now we'll just use the move index
@@ -120,6 +124,65 @@ def processGame(line, storage):
         col = flipCol(col)
         i += 6
 
+class FileLoader():
+    def __init__(self, kifuFolder, indexFolder):
+        self.kifuFolder = kifuFolder
+        self.indexFolder = indexFolder
+        self.kifuList = os.listdir(kifuFolder)
+        self.indexList = os.listdir(indexFolder)
+        self.fileIdx = 0
+        self.fileKifuIdx = 0
+        self.loadNewFile = True
+        self.indexFile = ''
+        self.kifuFile = ''
+
+    def loadNextFile(self):
+        if self.indexFile == '':
+            self.indexFile = open(self.indexList[self.fileIdx])
+            self.fileKifuIdx = 0
+        else:
+            year = self.indexList[self.fileIdx][0:4]
+            nextKifuYear = self.kifuList[self.fileKifuIdx+1][0:4]
+            self.fileKifuIdx += 1
+            self.kifuFile = open(self.kifuList[self.fileKifuIdx])
+
+            if year != nextKifuYear:
+                self.fileIdx += 1
+                self.indexFile = open(self.indexList[self.fileIdx])
+
+    
+    def next(self):
+        if self.loadNewFile:
+            self.loadNextFile()
+            self.loadNewFile = False
+
+
+
+def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1):
+    
+    movesPerFile = 10000
+    outFolder = 'outData/'
+    outfilename = outFolder + input("Enter output file name: ")
+
+    kifuList = os.listdir(kifuFolder)
+    indexList = os.listdir(indexFolder)
+
+    storage = Storage(outfilename, movesPerFile)
+    loader = FileLoader(kifuFolder, indexFolder)
+
+    stop = False
+    fileIndex = 0
+    movesProcessed = 0
+    
+    while movesProcessed < totalMoves and stop == False:
+
+        game = loader.next()
+
+        if stop:
+            storage.writeToFile()
+
+
+
 # Current format of output 
 #
 # Numpy Feature array:
@@ -146,7 +209,6 @@ def processGame(line, storage):
 # Misc
 # Data is randomized when written to disk,
 # but only within the bounds of the movesPerFile
-
 def curateData():
 
     movesPerFile = 10000
@@ -168,9 +230,6 @@ def curateData():
 
         if i >= count - 1:
             storage.writeToFile()
-
-
-def curateTygem(kifuFolder, indexFolder, movesPerGame = 1):
 
 
 

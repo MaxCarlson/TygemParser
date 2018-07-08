@@ -1,8 +1,9 @@
 from CurateData import curateTygem
 
 
-kifuFolder = input('Kifu Folder?')
-indexFolder = input('Index Folder?')
-movesPerGame = int(input('Moves per game?'))
+kifuFolder = 'Kifu' #input('Kifu Folder?') # Commented out for fast testing
+indexFolder = 'index' #input('Index Folder?')
+movesPerGame = 1 #int(input('Moves per game?'))
+totalMoves = 1000 #int(input('Total moves to process?'))
 
-curateTygem(kifuFolder, indexFolder, movesPerGame)
+curateTygem(kifuFolder, indexFolder, movesPerGame, totalMoves)
