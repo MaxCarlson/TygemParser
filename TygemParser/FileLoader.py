@@ -24,6 +24,7 @@ class FileLoader():
     # Load the file and make sure to properly align kifu
     # and index files when their indexes in the lists don't align
     def loadNextFile(self):
+            self.kifuFile.close()
             year            = self.indexList[self.indexIdx][4:8]
             nextKifuYear    = self.kifuList[self.kifuIdx+1][0:4]
             self.kifuIdx    += 1
@@ -32,6 +33,7 @@ class FileLoader():
             self.kLinesIdx  = 0
             
             if year != nextKifuYear:
+                self.indexFile.close()
                 self.indexIdx   += 1
                 self.indexFile  = self.openFile(self.indexFolder, self.indexList, self.indexIdx)
                 self.indexLines = self.indexFile.readlines()
