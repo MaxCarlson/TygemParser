@@ -10,16 +10,6 @@ from Move import Move, moveToIdx, flipCol
 from Globals import EMPTY, BLACK, WHITE, OFF_BOARD
 
 
-# We store and save the board as black/white
-def writeMoveAndBoardToFile(storage, move, board, col, won):
-
-    storage.asignBoard(board, move, won)    
-    
-    if storage.strgIdx >= storage.maxMovePerFile:
-        storage.writeToFile()
-
-    return
-
 def processGame(storage, info, game, movesToWrite):
 
     # We'll convert the board array to 19x19 when we write it to the file
@@ -71,7 +61,7 @@ def processGame(storage, info, game, movesToWrite):
         # If it's the last move, we can stop writting this game
         if i in idxMovesToWrite:
             processedMoves += 1
-            writeMoveAndBoardToFile(storage, m, board, col, won)
+            storage.asignBoard(board, m, won)
             if all(i >= m for m in idxMovesToWrite):
                 break
         

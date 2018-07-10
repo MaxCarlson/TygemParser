@@ -28,6 +28,9 @@ class Storage:
         self.yStorage[self.strgIdx] = [move.idx, move.color, won] 
         self.strgIdx += 1
 
+        if self.strgIdx > self.maxMovePerFile:
+            self.writeToFile()
+
     def nextFile(self):
         self.fileCount += 1
 
