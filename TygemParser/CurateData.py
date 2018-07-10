@@ -9,7 +9,6 @@ from ProgressBar import ProgressBar
 from Move import Move, moveToIdx, flipCol
 from Globals import EMPTY, BLACK, WHITE, OFF_BOARD
 
-
 def processGame(storage, info, game, movesToWrite):
 
     # We'll convert the board array to 19x19 when we write it to the file
@@ -17,18 +16,13 @@ def processGame(storage, info, game, movesToWrite):
     # TODO: add 1 tile edges to board to make it easier to compute things like libs
     board = Board()
 
-    semiCount = 0
-    i = 0
-
     winner = info.split('\t')[8]
+    moves  = game.split(';')[1:]
 
     assert(winner[0] == 'B' or winner[0] == 'W')
     whoWon = BLACK if winner[0] == 'B' else WHITE
 
-    moves = game.split(';')[1:]
-
     idxMovesToWrite = []
-
     for i in range(movesToWrite):
         roll = random.randint(0, len(moves))
         if roll in idxMovesToWrite:
@@ -61,7 +55,7 @@ def processGame(storage, info, game, movesToWrite):
         # If it's the last move, we can stop writting this game
         if i in idxMovesToWrite:
             processedMoves += 1
-            storage.asignBoard(board, m, won)
+            storage.asignBoard(board, m.idx, m.color, won)
             if all(i >= m for m in idxMovesToWrite):
                 break
         
@@ -69,20 +63,15 @@ def processGame(storage, info, game, movesToWrite):
         board.makeMove(m, col)
         col = flipCol(col)
         i += 1
+        del m
 
     return processedMoves
-
-
-from mem_top import mem_top
 
 def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1):
     
     movesPerFile = 10000
     outFolder = 'outData/'
     outfilename = outFolder + input("Enter output file name: ")
-
-    kifuList = os.listdir(kifuFolder)
-    indexList = os.listdir(indexFolder)
 
     storage = Storage(outfilename, movesPerFile)
     loader = FileLoader(kifuFolder, indexFolder)
@@ -91,7 +80,6 @@ def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1):
     movesProcessed = 0
 
     startTime = time.time()
-    
     bar = ProgressBar(totalMoves, width=60, fmt=ProgressBar.FULL)
 
     while movesProcessed < totalMoves:
@@ -100,8 +88,6 @@ def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1):
         mc = processGame(storage, info, game, movesPerGame)
         movesProcessed += mc
         bar(mc)
-        #if movesProcessed % 1000 == 0:
-        #    print(mem_top())
 
     storage.writeToFile()
 

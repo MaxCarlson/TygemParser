@@ -1,5 +1,5 @@
 import os
-
+import copy
 # Handles the loading of the TYGEM dataset files
 # Once they've been extracted from their archives
 class FileLoader():

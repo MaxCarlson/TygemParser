@@ -133,10 +133,9 @@ class Board:
         return board[0:self.internalDepth, 1:BoardLength+1, 1:BoardLength+1]
 
     def prevOrder(self):
-        order = []
-        it = self.prevIt - 1
-
-        it = self.PreviousStates - 1 if it < 0 else it
+        order   = []
+        it      = self.prevIt - 1
+        it      = self.PreviousStates - 1 if it < 0 else it
 
         for i in range(0, self.PreviousStates):
             order.append(it)

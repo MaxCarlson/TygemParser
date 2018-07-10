@@ -4,7 +4,6 @@ from Move import Move, moveToIdx, flipCol
 from Globals import BoardLength, BoardSize, BoardDepth, BoardLengthP, BoardSizeP
 from Globals import EMPTY, BLACK, WHITE, OFF_BOARD
 
-
 # Store gamestates + moves before we write them to disk
 class Storage:
     fileCount = 0
@@ -20,17 +19,16 @@ class Storage:
 
     def zeroBoard(self):
         self.storage = np.zeros((self.maxMovePerFile, self.SaveDepth, BoardLength, BoardLength), dtype=np.int8)
-        self.yStorage = np.zeros((self.maxMovePerFile, 3), dtype=int)
+        self.yStorage = np.zeros((self.maxMovePerFile, 3), dtype=np.int)
         return self.storage, self.yStorage
 
-    def asignBoard(self, board, move, won):
-        self.storage[self.strgIdx] = board.combineStates(move.color)
-        self.yStorage[self.strgIdx] = [move.idx, move.color, won] 
+    def asignBoard(self, board, idx, color, won):
+        self.storage[self.strgIdx] = board.combineStates(color)
+        self.yStorage[self.strgIdx] = [idx, color, won] 
         self.strgIdx += 1
-
-        if self.strgIdx > self.maxMovePerFile:
+        if self.strgIdx >= self.maxMovePerFile:
             self.writeToFile()
-
+            
     def nextFile(self):
         self.fileCount += 1
 
