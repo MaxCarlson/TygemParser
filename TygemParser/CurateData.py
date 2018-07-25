@@ -9,12 +9,12 @@ from ProgressBar import ProgressBar
 from Move import Move, moveToIdx, flipCol
 from Globals import EMPTY, BLACK, WHITE, OFF_BOARD
 
-def processGame(storage, info, game, movesToWrite):
+def processGame(storage, info, game, movesToWrite, previousStates):
 
     # We'll convert the board array to 19x19 when we write it to the file
     # for now we'll just use the move index
     # TODO: add 1 tile edges to board to make it easier to compute things like libs
-    board = Board()
+    board = Board(previousStates)
 
     winner = info.split('\t')[8]
     moves  = game.split(';')[1:]
@@ -67,13 +67,13 @@ def processGame(storage, info, game, movesToWrite):
 
     return processedMoves
 
-def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1):
+def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1, previousStates = 2):
     
     movesPerFile = 10000
     outFolder = 'outData/'
     outfilename = outFolder + input("Enter output file name: ")
 
-    storage = Storage(outfilename, movesPerFile)
+    storage = Storage(outfilename, movesPerFile, previousStates)
     loader = FileLoader(kifuFolder, indexFolder)
 
     fileIndex = 0
@@ -85,7 +85,7 @@ def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1):
     while movesProcessed < totalMoves:
 
         info, game = loader.next()
-        mc = processGame(storage, info, game, movesPerGame)
+        mc = processGame(storage, info, game, movesPerGame, previousStates)
         movesProcessed += mc
         bar(mc)
 

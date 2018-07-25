@@ -80,43 +80,23 @@ def findCapturedStones(board, move):
     
 
 class Board:
-    # Final output layer #'s
-    # All ones if black, all zeros if white
-    ColorLayer = 0
-    #
-    # Not added yet
-    # Player libs
-    # Opponent libs
-
-    internalDepth = 1
-    # Black, White, Empty
-    StoneLayer = 0
-    #
-    # Not added yet
-    # Black libs
-    # White libs
-
-    # Number of previous board states to save
-    # This doesn't count the current state
-    PreviousStates = 2
-    # iterator for those prev states
-    prevIt = 0
-
-    def __init__(self):
-        self.board = np.zeros((self.internalDepth, BoardLengthP, BoardLengthP), dtype=np.int8)
-        self.prev = np.zeros((self.PreviousStates, BoardLengthP, BoardLengthP), dtype=np.int8)
+    def __init__(self, prevStates):
+        self.prevIt         = 0
+        self.PreviousStates = prevStates
+        self.board          = np.zeros((BoardLengthP, BoardLengthP), dtype=np.int8)
+        self.prev           = np.zeros((self.PreviousStates, BoardLengthP, BoardLengthP), dtype=np.int8)
         self.board.fill(OFF_BOARD)
-        self.board[0:self.internalDepth, 1:BoardLength+1, 1:BoardLength+1] = EMPTY
+        self.board[1:BoardLength+1, 1:BoardLength+1] = EMPTY
 
     def makeMove(self, m, col):
         self.writeToPrev()
-        self.board[self.ColorLayer, m.pX, m.pY] = col
+        self.board[m.pX, m.pY] = col
         findCapturedStones(self, m)
         #printBoard(self)
 
     def at(self, pidx):
         x, y = pidxToXy(pidx)
-        return self.board[self.StoneLayer, x, y]
+        return self.board[x, y]
 
     # Get neighbor indices
     def getNeighs(self, pidx):
@@ -130,7 +110,7 @@ class Board:
     # Reshape to a square board
     # Slice off the extra padding we don't want
     def returnRealBoard(self, board):
-        return board[0:self.internalDepth, 1:BoardLength+1, 1:BoardLength+1]
+        return board[1:BoardLength+1, 1:BoardLength+1]
 
     def prevOrder(self):
         order   = []

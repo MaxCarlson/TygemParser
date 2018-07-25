@@ -6,24 +6,25 @@ from Globals import EMPTY, BLACK, WHITE, OFF_BOARD
 
 # Store gamestates + moves before we write them to disk
 class Storage:
-    fileCount = 0
-    strgIdx = 0
-    # Number of planes of the feature map that are written to disk
-    SaveDepth = (BoardDepth - 1) // 2
+    
+    yVarCount = 3
     maxMovePerFile = 10000
 
-    def __init__(self, outfileName, maxMovesPerFile):
-        self.outfileName = outfileName
+    def __init__(self, outfileName, maxMovesPerFile, previousStates):
+        self.fileCount      = 0
+        self.strgIdx        = 0
+        self.SaveDepth      = previousStates
+        self.outfileName    = outfileName
         self.maxMovePerFile = maxMovesPerFile
         self.storage, self.yStorage = self.zeroBoard()
 
     def zeroBoard(self):
-        self.storage = np.zeros((self.maxMovePerFile, self.SaveDepth, BoardLength, BoardLength), dtype=np.int8)
-        self.yStorage = np.zeros((self.maxMovePerFile, 3), dtype=np.int)
+        self.storage    = np.zeros((self.maxMovePerFile, self.SaveDepth, BoardLength, BoardLength), dtype=np.int8)
+        self.yStorage   = np.zeros((self.maxMovePerFile, self.yVarCount), dtype=np.int)
         return self.storage, self.yStorage
 
     def asignBoard(self, board, idx, color, won):
-        self.storage[self.strgIdx] = board.combineStates(color)
+        self.storage[self.strgIdx]  = board.combineStates(color)
         self.yStorage[self.strgIdx] = [idx, color, won] 
         self.strgIdx += 1
         if self.strgIdx >= self.maxMovePerFile:
@@ -40,7 +41,7 @@ class Storage:
         
         self.nextFile() 
         yname = self.outfileName + 'l' + str(self.fileCount)
-        name = self.outfileName  + 'f' + str(self.fileCount)
+        name  = self.outfileName + 'f' + str(self.fileCount)
 
         if self.strgIdx < self.maxMovePerFile:
             self.storage = self.storage[0:self.strgIdx]
