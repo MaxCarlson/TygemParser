@@ -13,7 +13,6 @@ def processGame(storage, info, game, movesToWrite, previousStates):
 
     # We'll convert the board array to 19x19 when we write it to the file
     # for now we'll just use the move index
-    # TODO: add 1 tile edges to board to make it easier to compute things like libs
     board = Board(previousStates)
 
     winner = info.split('\t')[8]
@@ -22,6 +21,8 @@ def processGame(storage, info, game, movesToWrite, previousStates):
     assert(winner[0] == 'B' or winner[0] == 'W')
     whoWon = BLACK if winner[0] == 'B' else WHITE
 
+    # Pick some random moves from within
+    # the range of moves in this game
     idxMovesToWrite = []
     for i in range(movesToWrite):
         roll = random.randint(0, len(moves))
@@ -55,7 +56,7 @@ def processGame(storage, info, game, movesToWrite, previousStates):
         # If it's the last move, we can stop writting this game
         if i in idxMovesToWrite:
             processedMoves += 1
-            storage.asignBoard(board, m.idx, m.color, won)
+            storage.asignBoard(board, m.idx, m.color, won, i)
             if all(i >= m for m in idxMovesToWrite):
                 break
         
@@ -67,7 +68,7 @@ def processGame(storage, info, game, movesToWrite, previousStates):
 
     return processedMoves
 
-def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1, previousStates = 2):
+def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1, previousStates = 3):
     
     movesPerFile = 10000
     outFolder = 'outData/'
@@ -82,6 +83,8 @@ def curateTygem(kifuFolder, indexFolder, movesPerGame = 1, totalMoves = 1, previ
     startTime = time.time()
     bar = ProgressBar(totalMoves, width=60, fmt=ProgressBar.FULL)
 
+    # TODO: Removed Handicap Games!!!!
+    
     while movesProcessed < totalMoves:
 
         info, game = loader.next()

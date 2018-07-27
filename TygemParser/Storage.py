@@ -7,7 +7,8 @@ from Globals import EMPTY, BLACK, WHITE, OFF_BOARD
 # Store gamestates + moves before we write them to disk
 class Storage:
     
-    yVarCount = 3
+    # [moveIdx, stmColor, didStmWin, moveNumber]
+    yVarCount = 4
     maxMovePerFile = 10000
 
     def __init__(self, outfileName, maxMovesPerFile, previousStates):
@@ -23,9 +24,9 @@ class Storage:
         self.yStorage   = np.zeros((self.maxMovePerFile, self.yVarCount), dtype=np.int)
         return self.storage, self.yStorage
 
-    def asignBoard(self, board, idx, color, won):
+    def asignBoard(self, board, idx, color, won, moveNum):
         self.storage[self.strgIdx]  = board.combineStates(color)
-        self.yStorage[self.strgIdx] = [idx, color, won] 
+        self.yStorage[self.strgIdx] = [idx, color, won, moveNum] 
         self.strgIdx += 1
         if self.strgIdx >= self.maxMovePerFile:
             self.writeToFile()

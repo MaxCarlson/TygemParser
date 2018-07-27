@@ -7,5 +7,6 @@ previousStates = int(input('Previous board states: '))
 movesPerGame = int(input('Moves per game: '))
 totalMoves = int(input('Total moves to process: '))
 
+# TODO: Removed Handicap Games!!!!
 
 curateTygem(kifuFolder, indexFolder, movesPerGame, totalMoves, previousStates)

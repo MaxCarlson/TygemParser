@@ -44,7 +44,7 @@ def findLiberties(board, searched, color, idx):
 def caputureStones(board, searched):
     for st in searched:
         x, y  = pidxToXy(st)
-        board.board[board.StoneLayer, x, y] = EMPTY
+        board.board[x, y] = EMPTY
 
 
 def findCapturedStones(board, move):
@@ -66,6 +66,8 @@ def findCapturedStones(board, move):
             caputureStones(board, searched)
             cap = True
     
+    # Can't be a suicide if we captured
+    # opponent peices
     if cap:
         return
 
@@ -82,7 +84,7 @@ def findCapturedStones(board, move):
 class Board:
     def __init__(self, prevStates):
         self.prevIt         = 0
-        self.PreviousStates = prevStates
+        self.PreviousStates = prevStates - 1
         self.board          = np.zeros((BoardLengthP, BoardLengthP), dtype=np.int8)
         self.prev           = np.zeros((self.PreviousStates, BoardLengthP, BoardLengthP), dtype=np.int8)
         self.board.fill(OFF_BOARD)
@@ -110,7 +112,7 @@ class Board:
     # Reshape to a square board
     # Slice off the extra padding we don't want
     def returnRealBoard(self, board):
-        return board[1:BoardLength+1, 1:BoardLength+1]
+        return np.expand_dims(board[1:BoardLength+1, 1:BoardLength+1], 0)
 
     def prevOrder(self):
         order   = []
